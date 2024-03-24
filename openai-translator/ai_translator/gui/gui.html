@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Translation Page</title>
+</head>
+<body>
+    <h1>Translation Page</h1>
+
+    <form action="#" method="post" enctype="multipart/form-data">
+        <label for="file-upload">Please upload a file to be translated:</label>
+        <input type="file" id="file-upload" name="file-upload">
+        <br><br>
+
+        <label for="language-select">Please select a language:</label>
+        <select id="language-select" name="language-select">
+            <option value="ZH">中文</option>
+            <option value="KO">韩文</option>
+            <option value="JA">日本語</option>
+            <option value="EN">English</option>
+            <option value="DE">Deutsch</option>
+            <option value="FR">Français</option>
+            <option value="IT">Italiano</option>
+        </select>
+        <br><br>
+
+        <input type="submit" value="Translate">
+    </form>
+
+    <textarea rows="10" cols="50" placeholder="Translation result will appear here"></textarea>
+</body>
+</html>
