@@ -1,5 +1,6 @@
 import gradio as gr
 import argparse
+import os
 
 from langchain_openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
@@ -16,11 +17,13 @@ text_splitter = CharacterTextSplitter(
 )
 
 SALES_BOTS = {}
-SALES_TYPE = "real_estate_sales"
 
 
 # 初始化矢量数据库
 def init_vector_store(file_path_and_name: str, vector_store_dir: str):
+    # Check if index.faiss and index.pkl files exist in vector_store_dir
+    if os.path.exists(os.path.join(vector_store_dir, "index.faiss")) and os.path.exists(os.path.join(vector_store_dir, "index.pkl")):
+        return
     # 读取数据集文件
     with open(file_path_and_name) as f:
         file_read = f.read()
