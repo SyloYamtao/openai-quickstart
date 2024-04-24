@@ -39,7 +39,6 @@ def initialize_sales_bot(vector_store_dir: str):
     # init_vector_store("data_set/" + vector_store_dir + "_data.txt", vector_store_dir)
     db = FAISS.load_local(vector_store_dir, OpenAIEmbeddings(), allow_dangerous_deserialization=True)
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-
     SALES_BOTS[vector_store_dir] = RetrievalQA.from_chain_type(llm,
                                                                retriever=db.as_retriever(
                                                                    search_type="similarity_score_threshold",
@@ -59,7 +58,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-
+# 获得命令行启动参数
 def get_arguments_enable_chat():
     # 从命令行参数中获取
     parser = argparse.ArgumentParser()
@@ -70,22 +69,13 @@ def get_arguments_enable_chat():
 
 ENABLE_CHAT = get_arguments_enable_chat()
 
-
-# 初始化对应的销售机器人
+# 聊天检索
 def sales_chat(sales_type, message, history):
     print(f"[message]{message}")
     print(f"[history]{history}")
-    # 从命令行参数中获取
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--enable_chat', type=str2bool, default=False)
-    # args = parser.parse_args()
-    # enable_chat = args.enable_chat
-
     print(f"[SALES_TYPE]{sales_type}")
     print(f"[ENABLE_CHAT]{ENABLE_CHAT}")
-
     ans = SALES_BOTS[sales_type]({"query": message})
-
     # 如果检索出结果，或者开了大模型聊天模式
     # 返回 RetrievalQA combine_documents_chain 整合的结果
     if ans["source_documents"] or ENABLE_CHAT:
@@ -106,8 +96,8 @@ def launch_gradio():
             ("教育销售顾问", "education_sales")
         ],
         value="real_estate_sales",
-        label="销售类型",
-        info="选择销售顾问的类型.默认为房地产销售"
+        label="房地产销售顾问类型",
+        info="选择销售顾问的类型(默认为房地产销售顾问)"
     )
 
     def wrapper_fn(message, history, sales_type):
