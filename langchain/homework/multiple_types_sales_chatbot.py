@@ -35,8 +35,8 @@ def init_vector_store(file_path_and_name: str, vector_store_dir: str):
 
 # 初始化对应的销售机器人
 def initialize_sales_bot(vector_store_dir: str):
-    # 第一次启动成功或者对应数据集的.faiss文件存在,可将此行代码注释
-    init_vector_store("data_set/" + vector_store_dir + "_data.txt", vector_store_dir)
+    # 如果对应数据集的.faiss文件存在,请将此行代码放开执行成功至少一次
+    # init_vector_store("data_set/" + vector_store_dir + "_data.txt", vector_store_dir)
     db = FAISS.load_local(vector_store_dir, OpenAIEmbeddings(), allow_dangerous_deserialization=True)
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
@@ -48,19 +48,31 @@ def initialize_sales_bot(vector_store_dir: str):
     SALES_BOTS[vector_store_dir].return_source_documents = True
     return SALES_BOTS[vector_store_dir]
 
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 # 初始化对应的销售机器人
 def sales_chat(sales_type, message, history):
     print(f"[message]{message}")
     print(f"[history]{history}")
     # 从命令行参数中获取
     parser = argparse.ArgumentParser()
-    parser.add_argument('--enable_chat', type=bool, default=True)
+    parser.add_argument('--enable_chat', type=str2bool, default=False)
     args = parser.parse_args()
     enable_chat = args.enable_chat
 
     print(f"[SALES_TYPE]{sales_type}")
+    print(f"[enable_chat]{enable_chat}")
 
     ans = SALES_BOTS[sales_type]({"query": message})
+
     # 如果检索出结果，或者开了大模型聊天模式
     # 返回 RetrievalQA combine_documents_chain 整合的结果
     if ans["source_documents"] or enable_chat:
