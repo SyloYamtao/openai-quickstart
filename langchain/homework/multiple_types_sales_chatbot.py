@@ -48,9 +48,10 @@ def initialize_sales_bot(vector_store_dir: str):
     SALES_BOTS[vector_store_dir].return_source_documents = True
     return SALES_BOTS[vector_store_dir]
 
+
 def str2bool(v):
     if isinstance(v, bool):
-       return v
+        return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
@@ -58,24 +59,36 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+
+def get_arguments_enable_chat():
+    # 从命令行参数中获取
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--enable_chat', type=str2bool, default=False)
+    args = parser.parse_args()
+    return args.enable_chat
+
+
+ENABLE_CHAT = get_arguments_enable_chat()
+
+
 # 初始化对应的销售机器人
 def sales_chat(sales_type, message, history):
     print(f"[message]{message}")
     print(f"[history]{history}")
     # 从命令行参数中获取
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--enable_chat', type=str2bool, default=False)
-    args = parser.parse_args()
-    enable_chat = args.enable_chat
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--enable_chat', type=str2bool, default=False)
+    # args = parser.parse_args()
+    # enable_chat = args.enable_chat
 
     print(f"[SALES_TYPE]{sales_type}")
-    print(f"[enable_chat]{enable_chat}")
+    print(f"[ENABLE_CHAT]{ENABLE_CHAT}")
 
     ans = SALES_BOTS[sales_type]({"query": message})
 
     # 如果检索出结果，或者开了大模型聊天模式
     # 返回 RetrievalQA combine_documents_chain 整合的结果
-    if ans["source_documents"] or enable_chat:
+    if ans["source_documents"] or ENABLE_CHAT:
         print(f"[result]{ans['result']}")
         print(f"[source_documents]{ans['source_documents']}")
         return ans["result"]
@@ -86,10 +99,16 @@ def sales_chat(sales_type, message, history):
 
 def launch_gradio():
     sales_type = gr.Dropdown(
-        choices=["real_estate_sales", "electrical_appliance_sales", "home_decoration_sales", "education_sales"],
+        choices=[
+            ('房地产销售顾问', "real_estate_sales"),
+            ("电器销售顾问", "electrical_appliance_sales"),
+            ("家装销售顾问", "home_decoration_sales"),
+            ("教育销售顾问", "education_sales")
+        ],
         label="销售类型",
         info="选择销售顾问的类型.默认为房地产销售"
     )
+
     def wrapper_fn(message, history, sales_type):
         return sales_chat(sales_type, message, history)
 
