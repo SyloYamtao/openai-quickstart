@@ -105,6 +105,7 @@ def launch_gradio():
             ("家装销售顾问", "home_decoration_sales"),
             ("教育销售顾问", "education_sales")
         ],
+        value="real_estate_sales",
         label="销售类型",
         info="选择销售顾问的类型.默认为房地产销售"
     )
