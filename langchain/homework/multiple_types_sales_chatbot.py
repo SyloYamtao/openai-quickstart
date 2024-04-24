@@ -29,23 +29,23 @@ def init_vector_store(file_path_and_name: str, vector_store_dir: str):
     # 初始化对应数据集文件的矢量数据库
     db = FAISS.from_documents(docs, OpenAIEmbeddings())
     # 矢量数据库数据持久化
-    db.save_local(vector_store_dir)
+    db.save_local( vector_store_dir)
     print(vector_store_dir + " has loaded in faiss successfully...")
 
 
 # 初始化对应的销售机器人
-def initialize_sales_bot(vector_store_dir: str):
+def initialize_sales_bot(vector_store: str):
     # 如果对应数据集的.faiss文件存在,请将此行代码放开执行成功至少一次
-    # init_vector_store("data_set/" + vector_store_dir + "_data.txt", vector_store_dir)
-    db = FAISS.load_local(vector_store_dir, OpenAIEmbeddings(), allow_dangerous_deserialization=True)
+    init_vector_store("data_set/" + vector_store + "_data.txt", "vector_store/" + vector_store)
+    db = FAISS.load_local("vector_store/" + vector_store, OpenAIEmbeddings(), allow_dangerous_deserialization=True)
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-    SALES_BOTS[vector_store_dir] = RetrievalQA.from_chain_type(llm,
-                                                               retriever=db.as_retriever(
-                                                                   search_type="similarity_score_threshold",
-                                                                   search_kwargs={"score_threshold": 0.8}))
+    SALES_BOTS[vector_store] = RetrievalQA.from_chain_type(llm,
+                                                           retriever=db.as_retriever(
+                                                               search_type="similarity_score_threshold",
+                                                               search_kwargs={"score_threshold": 0.8}))
     # 返回向量数据库的检索结果
-    SALES_BOTS[vector_store_dir].return_source_documents = True
-    return SALES_BOTS[vector_store_dir]
+    SALES_BOTS[vector_store].return_source_documents = True
+    return SALES_BOTS[vector_store]
 
 
 def str2bool(v):
@@ -58,6 +58,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+
 # 获得命令行启动参数
 def get_arguments_enable_chat():
     # 从命令行参数中获取
@@ -68,6 +69,7 @@ def get_arguments_enable_chat():
 
 
 ENABLE_CHAT = get_arguments_enable_chat()
+
 
 # 聊天检索
 def sales_chat(sales_type, message, history):
