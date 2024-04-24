@@ -68,8 +68,8 @@ This share link expires in 72 hours. For free permanent hosting and GPU upgrades
 
 ### 页面
 ![img.png](image/img.png)
-## 许可证
 
+## 许可证
 该项目根据Apache-2.0许可证的条款进行许可。详情请参见[LICENSE](LICENSE)文件。
 
 
