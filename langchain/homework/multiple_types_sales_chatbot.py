@@ -48,7 +48,6 @@ def initialize_sales_bot(vector_store_dir: str):
     SALES_BOTS[vector_store_dir].return_source_documents = True
     return SALES_BOTS[vector_store_dir]
 
-
 # 初始化对应的销售机器人
 def sales_chat(sales_type, message, history):
     print(f"[message]{message}")
