@@ -16,6 +16,7 @@ text_splitter = CharacterTextSplitter(
 )
 
 SALES_BOTS = {}
+SALES_TYPE = "real_estate_sales"
 
 
 # 初始化矢量数据库
@@ -49,14 +50,19 @@ def initialize_sales_bot(vector_store_dir: str):
 
 
 # 初始化对应的销售机器人
-def sales_chat(message, history, sales_type):
+def sales_chat(message, history):
+    global SALES_TYPE
     # 从命令行参数中获取
     parser = argparse.ArgumentParser()
     parser.add_argument('--enable_chat', type=bool, default=True)
     args = parser.parse_args()
     enable_chat = args.enable_chat
 
-    ans = SALES_BOTS[sales_type]({"query": message})
+    if message.startswith("/set_sales_type "):
+        SALES_TYPE = message[len("/set_sales_type "):]
+        return "销售类型已更改为 " + SALES_TYPE
+
+    ans = SALES_BOTS[SALES_TYPE]({"query": message})
     # 如果检索出结果，或者开了大模型聊天模式
     # 返回 RetrievalQA combine_documents_chain 整合的结果
     if ans["source_documents"] or enable_chat:
@@ -67,16 +73,24 @@ def sales_chat(message, history, sales_type):
 
 
 def launch_gradio():
+
     sales_type = gr.Dropdown(
         choices=["real_estate_sales", "electrical_appliance_sales", "home_decoration_sales", "education_sales"],
         label="销售类型")
+
     chat_interface = gr.ChatInterface(
         fn=sales_chat,
         title="销售聊天",
         chatbot=gr.Chatbot(height=600),
     )
 
-    chat_interface.launch(share=True, server_name="0.0.0.0")
+    interface = gr.Interface(
+        fn=sales_chat,
+        inputs=[sales_type, chat_interface],
+        outputs="text",
+    )
+
+    interface.launch(share=True, server_name="0.0.0.0")
 
 
 if __name__ == "__main__":
