@@ -35,7 +35,7 @@ def init_vector_store(file_path_and_name: str, vector_store_dir: str):
 
 # 初始化对应的销售机器人
 def initialize_sales_bot(vector_store_dir: str):
-    init_vector_store("data_set/" + vector_store_dir + "_data.txt", vector_store_dir)
+    # init_vector_store("data_set/" + vector_store_dir + "_data.txt", vector_store_dir)
     db = FAISS.load_local(vector_store_dir, OpenAIEmbeddings(), allow_dangerous_deserialization=True)
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
 
@@ -45,27 +45,26 @@ def initialize_sales_bot(vector_store_dir: str):
                                                                    search_kwargs={"score_threshold": 0.8}))
     # 返回向量数据库的检索结果
     SALES_BOTS[vector_store_dir].return_source_documents = True
-
     return SALES_BOTS[vector_store_dir]
 
-
 # 初始化对应的销售机器人
-def sales_chat(message, history):
-    global SALES_TYPE
+def sales_chat(sales_type, message, history):
+    print(f"[message]{message}")
+    print(f"[history]{history}")
     # 从命令行参数中获取
     parser = argparse.ArgumentParser()
     parser.add_argument('--enable_chat', type=bool, default=True)
     args = parser.parse_args()
     enable_chat = args.enable_chat
 
-    if message.startswith("/set_sales_type "):
-        SALES_TYPE = message[len("/set_sales_type "):]
-        return "销售类型已更改为 " + SALES_TYPE
+    print(f"[SALES_TYPE]{sales_type}")
 
-    ans = SALES_BOTS[SALES_TYPE]({"query": message})
+    ans = SALES_BOTS[sales_type]({"query": message})
     # 如果检索出结果，或者开了大模型聊天模式
     # 返回 RetrievalQA combine_documents_chain 整合的结果
     if ans["source_documents"] or enable_chat:
+        print(f"[result]{ans['result']}")
+        print(f"[source_documents]{ans['source_documents']}")
         return ans["result"]
     # 否则输出套路话术
     else:
@@ -73,24 +72,19 @@ def sales_chat(message, history):
 
 
 def launch_gradio():
-
     sales_type = gr.Dropdown(
         choices=["real_estate_sales", "electrical_appliance_sales", "home_decoration_sales", "education_sales"],
-        label="销售类型")
-
+        label="选择销售类型"
+    )
     chat_interface = gr.ChatInterface(
+        additional_inputs=[sales_type],
         fn=sales_chat,
-        title="销售聊天",
+        title="房产销售",
+        # retry_btn=None,
+        # undo_btn=None,
         chatbot=gr.Chatbot(height=600),
     )
-
-    interface = gr.Interface(
-        fn=sales_chat,
-        inputs=[sales_type, chat_interface],
-        outputs="text",
-    )
-
-    interface.launch(share=True, server_name="0.0.0.0")
+    chat_interface.launch(share=True, server_name="0.0.0.0")
 
 
 if __name__ == "__main__":
